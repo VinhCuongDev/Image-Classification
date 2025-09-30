@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style>
+        #gallery img {
+            width: 100%;
+            max-width: 500px;
+            height: 350px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container p-5">
+        <div class="row row-cols-2">
+            <div class="col" style="height: 500px;">
+                <div class="bg-body-tertiary w-100 h-100 rounded-2 p-3">
+                    <h4 class="mb-3">Image</h4>
+                    <div class="upload-container text-center">
+                        <form action="#" method="post" enctype="multipart/form-data" class="d-flex justify-content-center align-items-center mt-5">
+                            <input type="file" name="image" id="img" class="d-none">
+                            <label for="img" id="uploadBtn" class="btn btn-primary">Upload</label>
+                        </form>
+                        <div id="gallery" class="w-100 h-100"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col" style="height: 500px;">
+                <div class="bg-body-tertiary w-100 h-100 rounded-2 p-3">
+                    <h4 class="mb-3">Output</h4>
+                    <div class="p-3" id="output"></div>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex justify-content-center gap-3 mt-4 mx-auto">
+            <button type="button" class="btn btn-secondary" id="clear-button">CLEAR</button>
+            <button type="button" class="btn btn-warning" id="submit-button">SUBMIT</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+    <script>
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const imgElement = document.getElementById('gallery');
+                    imgElement.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+    document.getElementById('img').addEventListener('change', previewImage);
+
+
+    document.getElementById('submit-button').addEventListener('click', function () {
+        var fileInput = document.getElementById('img');
+        var file = fileInput.files[0];
+        if (!file) {
+            alert('Please upload an image.');
+            return;
+        }
+
+        var formData = new FormData();
+        formData.append('image', file);
+
+        fetch('/predict', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Update the output section with prediction data
+            var outputElement = document.getElementById('output');
+            outputElement.innerHTML = ''; // Clear previous output
+
+            var predictions = data; // Assuming JSON response contains both class names and percentages
+
+            // Loop through all predictions
+            predictions.forEach(prediction => {
+                var className = prediction.class_name;
+                var percentage = prediction.percentage;
+
+                // Create HTML for each prediction
+                var predictionHTML = `
+                <div class="d-flex gap-2 mb-3">
+                    <span>${className}: </span>
+                    <div class="flex-grow-1" style="height: 26px;">
+                        <div class="h-100 bg-dark-subtle" style="width: ${percentage.toFixed(1)}%;">${percentage.toFixed(1)}%</div>
+                    </div>
+                </div>
+            `;
+
+                // Append prediction HTML to output element
+                outputElement.innerHTML += predictionHTML;
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+
+
+
+    document.getElementById('clear-button').addEventListener('click', function () {
+      document.getElementById('img').value = ''; // Clear the input file field
+      document.getElementById('gallery').innerHTML = ''; // Clear the image gallery
+      document.getElementById('uploadBtn').style.display = 'block'; // Show the upload button
+    });
+  </script>
+</body>
+
+</html>
