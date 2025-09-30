@@ -41,7 +41,7 @@ Tập dữ liệu được lấy từ các cảnh thiên nhiên trên thế gi�
 - Python = 3.10.11
 - Bước 1:
   
-    - git clone https://github.com/HVINHCuong/Classification.git
+    - git clone https://github.com/VinhCuongDev/Image-Classification.git
     - cd Classification
 - Bước 2:
     run python app.py
